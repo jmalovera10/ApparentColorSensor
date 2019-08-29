@@ -5,7 +5,7 @@ import math
 from sklearn.cluster import KMeans
 from collections import Counter
 
-img = cv2.imread('test_case2.png')
+img = cv2.imread('tests/test_case5.png')
 hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
 # Red color rangle  169, 100, 100 , 189, 255, 255
