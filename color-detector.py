@@ -1,18 +1,21 @@
+from collections import Counter
+
+import sys
 import cv2
 import imutils
+import colorsys
 import numpy as np
-import math
 from sklearn.cluster import KMeans
-from collections import Counter
 
 
 def main():
-    img = cv2.imread('tests/test_case5.png')
+    img_file = sys.argv[1]
+    img = cv2.imread(img_file)
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
     # Red color rangle  169, 100, 100 , 189, 255, 255
-    lower_range = np.array([89, 50, 50])
-    upper_range = np.array([140, 255, 255])
+    lower_range = np.array([169, 100, 75])
+    upper_range = np.array([189, 255, 255])
 
     mask = cv2.inRange(hsv, lower_range, upper_range)
     mask = cv2.erode(mask, None, iterations=2)
@@ -23,58 +26,87 @@ def main():
     cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL,
                             cv2.CHAIN_APPROX_SIMPLE)
     cnts = imutils.grab_contours(cnts)
-    center = None
     # only proceed if at least one contour was found
     cnts = sorted(cnts, key=cv2.contourArea, reverse=True)
-    centers = []
-    radi = []
-    counter = 0
 
+    centers = []
+    # radi = []
+    counter = 0
+    # referenceContours = []
+    rotation = 0
+    height = 0
+    width = 0
     # iterate all existing contours
-    referenceContours = []
     for c in cnts:
         # Limit the contours to the 2 biggest ones
         if counter >= 2:
             break
-        referenceContours.append(c)
-        ((x, y), radius) = cv2.minEnclosingCircle(c)
-        M = cv2.moments(c)
-        center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
-        centers.append(center)
-        radi.append(radius)
+        peri = cv2.arcLength(c, True)
+        approx = cv2.approxPolyDP(c, 0.04 * peri, True)
+        if len(approx) == 4:
+            # Add the contour that matches the reference shape
+            # referenceContours.append(c)
+            min_rectangle = cv2.minAreaRect(c)
+            center = min_rectangle[0]
+            width += min_rectangle[1][0]
+            height += min_rectangle[1][1]
+            rotation += min_rectangle[2]
 
-        leftUp = ((int(x) - int(radius / math.sqrt(2))), int(y) - int(radius / math.sqrt(2)))
-        rightBottom = (int(x) + int(radius / math.sqrt(2)), int(y) + int(radius / math.sqrt(2)))
-        # draw the circle and centroid on the frame,
-        # then update the list of tracked points
-        # cv2.circle(img, (int(x), int(y)), int(radius),(0, 255, 255), 2)
-        # cv2.rectangle(img, leftUp, rightBottom, (0, 255, 255), 2)
-        cv2.drawContours(img, referenceContours, -1, (0, 255, 255), 3)
-        cv2.circle(img, center, 5, (0, 0, 255), -1)
-        counter += 1
+            centers.append(center)
+            # ((x, y), radius) = cv2.minEnclosingCircle(c)
+            # M = cv2.moments(c)
+            # center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+            # centers.append(center)
+            # radi.append(radius)
 
+            # leftUp = ((int(x) - int(radius / math.sqrt(2))), int(y) - int(radius / math.sqrt(2)))
+            # rightBottom = (int(x) + int(radius / math.sqrt(2)), int(y) + int(radius / math.sqrt(2)))
+            # draw the circle and centroid on the frame,
+            # then update the list of tracked points
+            # cv2.circle(img, (int(x), int(y)), int(radius),(0, 255, 255), 2)
+            # cv2.rectangle(img, leftUp, rightBottom, (0, 255, 255), 2)
+            # cv2.drawContours(img, referenceContours, -1, (0, 255, 255), 3)
+            center = tuple(map(int, center))
+            cv2.circle(img, center, 5, (0, 0, 255), -1)
+            box = cv2.boxPoints(min_rectangle)
+            box = np.int0(box)
+            cv2.drawContours(img, [box], 0, (0, 0, 255), 2)
+
+            counter += 1
+
+    width /= counter * 1.8
+    height /= counter * 1.2
+    rotation /= counter
     # Draw the circle in the central point between the center of each guide
     centers = sorted(centers, key=lambda tup: tup[0])
     centroidX = int((abs(centers[0][0] - centers[1][0]) / 2) + centers[0][0])
     centers = sorted(centers, key=lambda tup: tup[1])
     centroidY = int((abs(centers[0][1] - centers[1][1]) / 2) + centers[0][1])
-    centroidRadius = int((radi[0] + radi[1]) / 4)
-    # cv2.circle(img, (centroidX, centroidY), centroidRadius, (255, 0, 255), 2)
 
     # calculate the crop coordinates to the color analysis area
-    cropXLeft = centroidX - centroidRadius
-    cropXRight = centroidX + centroidRadius
-    cropYUp = centroidY - centroidRadius
-    cropYDown = centroidY + centroidRadius
+    cropXLeft = centroidX - width / 2
+    cropXRight = centroidX + width / 2
+    cropYUp = centroidY - height / 2
+    cropYDown = centroidY + height / 2
 
-    cv2.rectangle(img, (cropXLeft, cropYUp), (cropXRight, cropYDown), (255, 0, 255), 2)
+    center_box = cv2.boxPoints(((centroidX, centroidY), (width, height), rotation))
+    center_box = np.int0(center_box)
 
-    cropArea = img[cropYUp:cropYDown, cropXLeft:cropXRight]
+    (img_h, img_w) = img.shape[:2]
+    rotation_matrix = cv2.getRotationMatrix2D((centroidX, centroidY), rotation, 1)
+    cropArea = cv2.warpAffine(img, rotation_matrix, (img_w, img_h))
+    # cv2.rectangle(img, (cropXLeft, cropYUp), (cropXRight, cropYDown), (255, 0, 255), 2)
+
+    cropArea = cv2.getRectSubPix(cropArea, (int(width), int(height)), (int(centroidX), int(centroidY)))
+
+    # Draw the centroid contour in the original image
+    cv2.drawContours(img, [center_box], 0, (0, 160, 255), 2)
+    cv2.circle(img, (int(centroidX), int(centroidY)), 5, (255, 0, 255), -1)
     cv2.imshow('cropArea', cropArea)
 
     # Cluster and assign labels to the pixels in the crop area
     cropArea = cropArea.reshape((cropArea.shape[0] * cropArea.shape[1], 3))
-    cluster = KMeans(n_clusters=4)
+    cluster = KMeans(n_clusters=10)
     labels = cluster.fit_predict(cropArea)
 
     # count labels to find most popular
@@ -83,10 +115,14 @@ def main():
     # subset out most popular centroid
     dominant_color = cluster.cluster_centers_[label_counts.most_common(1)[0][0]]
     apparentColor = map(int, list(dominant_color))
-
+    apparentColor = colorsys.rgb_to_hsv(float(apparentColor[2]) / 255.0, float(apparentColor[1]) / 255.0,
+                                        float(apparentColor[0]) / 255.0)
+    print apparentColor
     # register the RGB values for the sample
     font = cv2.FONT_HERSHEY_COMPLEX
-    cv2.putText(img, 'Sample RGB: (%d, %d, %d)' % (apparentColor[2], apparentColor[1], apparentColor[0]), (40, 40),
+    cv2.putText(img,
+                'Sample HSV: (%d, %d, %d)' % (apparentColor[0] * 360, apparentColor[1] * 100, apparentColor[2] * 100),
+                (40, 40),
                 font,
                 1, (0, 0, 0), 2, cv2.LINE_AA)
 
