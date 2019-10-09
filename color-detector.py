@@ -30,9 +30,7 @@ def main():
     cnts = sorted(cnts, key=cv2.contourArea, reverse=True)
 
     centers = []
-    # radi = []
     counter = 0
-    # referenceContours = []
     rotation = 0
     height = 0
     width = 0
@@ -45,7 +43,6 @@ def main():
         approx = cv2.approxPolyDP(c, 0.04 * peri, True)
         if len(approx) == 4:
             # Add the contour that matches the reference shape
-            # referenceContours.append(c)
             min_rectangle = cv2.minAreaRect(c)
             center = min_rectangle[0]
             width += min_rectangle[1][0]
@@ -53,20 +50,8 @@ def main():
             rotation += min_rectangle[2]
 
             centers.append(center)
-            # ((x, y), radius) = cv2.minEnclosingCircle(c)
-            # M = cv2.moments(c)
-            # center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
-            # centers.append(center)
-            # radi.append(radius)
-
-            # leftUp = ((int(x) - int(radius / math.sqrt(2))), int(y) - int(radius / math.sqrt(2)))
-            # rightBottom = (int(x) + int(radius / math.sqrt(2)), int(y) + int(radius / math.sqrt(2)))
-            # draw the circle and centroid on the frame,
-            # then update the list of tracked points
-            # cv2.circle(img, (int(x), int(y)), int(radius),(0, 255, 255), 2)
-            # cv2.rectangle(img, leftUp, rightBottom, (0, 255, 255), 2)
-            # cv2.drawContours(img, referenceContours, -1, (0, 255, 255), 3)
             center = tuple(map(int, center))
+
             cv2.circle(img, center, 5, (0, 0, 255), -1)
             box = cv2.boxPoints(min_rectangle)
             box = np.int0(box)
@@ -83,20 +68,12 @@ def main():
     centers = sorted(centers, key=lambda tup: tup[1])
     centroidY = int((abs(centers[0][1] - centers[1][1]) / 2) + centers[0][1])
 
-    # calculate the crop coordinates to the color analysis area
-    cropXLeft = centroidX - width / 2
-    cropXRight = centroidX + width / 2
-    cropYUp = centroidY - height / 2
-    cropYDown = centroidY + height / 2
-
     center_box = cv2.boxPoints(((centroidX, centroidY), (width, height), rotation))
     center_box = np.int0(center_box)
 
     (img_h, img_w) = img.shape[:2]
     rotation_matrix = cv2.getRotationMatrix2D((centroidX, centroidY), rotation, 1)
     cropArea = cv2.warpAffine(img, rotation_matrix, (img_w, img_h))
-    # cv2.rectangle(img, (cropXLeft, cropYUp), (cropXRight, cropYDown), (255, 0, 255), 2)
-
     cropArea = cv2.getRectSubPix(cropArea, (int(width), int(height)), (int(centroidX), int(centroidY)))
 
     # Draw the centroid contour in the original image
