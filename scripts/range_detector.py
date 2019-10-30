@@ -66,6 +66,16 @@ def main():
 
     if args['image']:
         image = cv2.imread(args['image'])
+        # resize image
+        if image.shape[1] > image.shape[0]:
+            scale_percent = int(100000 / image.shape[1])  # percent of original size
+        else:
+            scale_percent = int(100000 / image.shape[0])  # percent of original size
+        width = int(image.shape[1] * scale_percent / 100)
+        height = int(image.shape[0] * scale_percent / 100)
+        dim = (width, height)
+        # resize image
+        image = cv2.resize(image, dim, interpolation=cv2.INTER_AREA)
 
         if range_filter == 'RGB':
             frame_to_thresh = image.copy()
