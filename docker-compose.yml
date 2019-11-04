@@ -1,0 +1,9 @@
+version: '3'
+services:
+  worker:
+    container_name: image_worker
+    build: .
+    depends_on:
+      - opencv
+  opencv:
+    image: "victorhcm/opencv:3.2.0-python2.7"
