@@ -8,7 +8,7 @@ load_dotenv('.env')
 
 connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
 channel = connection.channel()
-channel.queue_declare(queue=os.getenv("QUEUE_NAME"))
+channel.queue_declare(queue=os.getenv("QUEUE_NAME"),durable=True)
 
 
 def callback(ch, method, properties, body):

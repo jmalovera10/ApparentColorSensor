@@ -1,3 +1,6 @@
+mysql-connector-python
 python-dotenv
-cv2
+opencv-python
 pika
+imutils
+sklearn
