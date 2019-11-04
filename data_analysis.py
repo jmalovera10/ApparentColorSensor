@@ -1,7 +1,9 @@
+# -*- coding: utf-8 -*-
+
 from dotenv import load_dotenv
 import os
 import mysql.connector
-import numpy as np
+from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 
 if __name__ == '__main__':
@@ -24,5 +26,22 @@ if __name__ == '__main__':
 
     # Gets all results for each UPC including AVG, VAR and STD DEV
     results = db_cursor.fetchall()
-    # for res in results:
+    UPC = []
+    H = []
+    S = []
+    V = []
+    for res in results:
+        UPC.append(int(res[0]))
+        H.append(int(res[1]))
+        S.append(int(res[2]))
+        V.append(int(res[3]))
+    fig = plt.figure()
+    ax = fig.gca(projection='3d')
+    ax.plot(H, S, V, label='CARACTERIZACION PROTOTIPO 1')
+    ax.set_xlabel('HUE')
+    ax.set_ylabel('SATURATION')
+    ax.set_zlabel('VALUE')
+    ax.legend()
+
+    plt.show()
 
