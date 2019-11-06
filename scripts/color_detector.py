@@ -29,8 +29,9 @@ class ColorDetector:
         img = cv2.resize(img, dim, interpolation=cv2.INTER_AREA)
 
         # change color space
+        '''
         hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-
+        
         # HSV RED mask part 1
         lower_range = np.array([0, 100, 0])
         upper_range = np.array([10, 255, 255])
@@ -108,8 +109,10 @@ class ColorDetector:
 
         # Cluster and assign labels to the pixels in the crop area
         cropArea = cropArea.reshape((cropArea.shape[0] * cropArea.shape[1], 3))
+        '''
         cluster = KMeans(n_clusters=10)
-        labels = cluster.fit_predict(cropArea)
+        # labels = cluster.fit_predict(cropArea)
+        labels = cluster.fit_predict(img)
 
         # count labels to find most popular
         label_counts = Counter(labels)
@@ -132,7 +135,7 @@ class ColorDetector:
         # update the points queue
         if debug_image:
             cv2.imshow('image', img)
-            cv2.imshow('mask', mask)
+            # cv2.imshow('mask', mask)
 
         if debug_image:
             cv2.waitKey(0)
