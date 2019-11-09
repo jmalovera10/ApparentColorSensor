@@ -106,13 +106,13 @@ class ColorDetector:
         cv2.circle(img, (int(centroidX), int(centroidY)), 5, (255, 0, 255), -1)
         if debug_image:
             cv2.imshow('cropArea', cropArea)
-
-        # Cluster and assign labels to the pixels in the crop area
-        cropArea = cropArea.reshape((cropArea.shape[0] * cropArea.shape[1], 3))
         '''
+        # Cluster and assign labels to the pixels in the crop area
+        # cropArea = cropArea.reshape((cropArea.shape[0] * cropArea.shape[1], 3))
+        cropArea = img.reshape((img.shape[0] * img.shape[1], 3))
         cluster = KMeans(n_clusters=10)
-        # labels = cluster.fit_predict(cropArea)
-        labels = cluster.fit_predict(img)
+        labels = cluster.fit_predict(cropArea)
+
 
         # count labels to find most popular
         label_counts = Counter(labels)
@@ -142,3 +142,8 @@ class ColorDetector:
             cv2.destroyAllWindows()
 
         return hsv_tuple
+
+if __name__ == '__main__':
+    path = sys.argv[1]
+    color_detector = ColorDetector(path)
+    color_detector.process_image(True)
