@@ -7,35 +7,46 @@ from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 import sys
 from getopt import getopt
-from sklearn.linear_model import LinearRegression
+import colorsys
+from scripts.regression_methods import RegressionMethods
 
 
-def average_characterization(data):
-    print 'AVERAGE_CHARACTERIZATION'
+def data_plotting(data, regression_data):
+    print 'DATA_PLOTTING'
     fig = plt.figure()
     ax = fig.gca(projection='3d')
-    ax.scatter([UPC for UPC, H, S, V in data], [H for UPC, H, S, V in data], [S for UPC, H, S, V in data], zdir='z',
-               label='CARACTERIZACION PROTOTIPO 1')
-    ax.set_xlabel('UPC')
-    ax.set_ylabel('HUE')
-    ax.set_zlabel('SATURATION')
+    ax.scatter([H for UPC, H, S, V in data], [S for UPC, H, S, V in data], [UPC for UPC, H, S, V in data],
+               zdir='z', label='CARACTERIZACION PROTOTIPO 1', cmap='Blues')
+    ax.plot([H for UPC, H, S, V in data], [S for UPC, H, S, V in data], [UPC for UPC, H, S, V in data],
+            'red')
+    ax.set_xlabel('HUE')
+    ax.set_ylabel('SATURATION')
+    ax.set_zlabel('UPC')
     ax.legend()
 
     plt.show()
 
 
-def multiple_regression(data):
-    x = [[H, S] for UPC, H, S, V in data]
-    y = [[UPC] for UPC, H, S, V in data]
-    model = LinearRegression()
-    model.fit(x, y)
-    print('H, S, V Coefficients: ', model.coef_)
-    print('Intercept: ', model.intercept_)
-
-
 if __name__ == '__main__':
     # Load environment variables
     load_dotenv('.env')
+
+    # Load script arguments
+    arguments, values = getopt(sys.argv[1:], 'm:c:pg', ['method', 'colorspace', 'precluster', 'graph'])
+    method = None
+    colorspace = None
+    precluster = False
+    graph = False
+    for command, value in arguments:
+        if command in ('-m', '--method'):
+            method = value
+        elif command in ('-c', '--colorspace'):
+            colorspace = value
+        elif command in ('-p', '--precluster'):
+            precluster = True
+        elif command in ('-g', '--graph'):
+            graph = True
+
     # Connect to the database
     measurements_db = mysql.connector.connect(
         user=os.getenv("USER"),
@@ -43,29 +54,57 @@ if __name__ == '__main__':
         host=os.getenv("HOST"),
         database=os.getenv("DATABASE")
     )
-    db_cursor = measurements_db.cursor(prepared=True)
-
-    # Retrieve calculated data from all UPC measurements
-    '''
-    query = 'SELECT UPC, ROUND(AVG(H)) AS H_AVG, ROUND(AVG(S)) AS S_AVG, ROUND(AVG(V)) AS V_AVG, ' \
-            'AVG(H*H)-AVG(H)*AVG(H) AS H_VAR, AVG(S*S)-AVG(S)*AVG(S) AS S_VAR, AVG(V*V)-AVG(V)*AVG(V) AS V_VAR, ' \
-            'SQRT(AVG(H*H)-AVG(H)*AVG(H)) AS H_DEV, SQRT(AVG(S*S)-AVG(S)*AVG(S)) AS S_DEV, SQRT(AVG(V*V)-AVG(V)*AVG(V)) AS V_DEV FROM CALIBRATION GROUP BY UPC'
-    db_cursor.execute(query)
-    '''
+    db_cursor = measurements_db.cursor(buffered=True)
+    # Retrieve calibration data
     query = 'SELECT UPC, H, S, V FROM CALIBRATION'
     db_cursor.execute(query)
     # Gets all results for each UPC including AVG, VAR and STD DEV
     results = db_cursor.fetchall()
     data = []
+    H = None
+    S = None
+    V = None
 
     for res in results:
         # Append tuple with (UPC, H, S, V)
-        data.append((int(res[0]), int(res[1]), int(res[2]), int(res[3])))
+        H = int(res[1])
+        S = int(res[2])
+        V = int(res[3])
+        if colorspace == 'RGB':
+            transform = colorsys.hsv_to_rgb(float(H) / 360.0, float(S) / 100.0, float(V) / 100.0)
+            H = int(transform[0] * 255)
+            S = int(transform[1] * 255)
+            V = int(transform[2] * 255)
+        elif colorspace == 'HSL':
+            RGB = colorsys.hsv_to_rgb(float(H) / 360.0, float(S) / 100.0, float(V) / 100.0)
+            transform = colorsys.rgb_to_hls(RGB[0], RGB[1], RGB[2])
+            H = int(transform[0] * 360)
+            S = int(transform[2] * 100)
+            V = int(transform[1] * 100)
+        data.append((int(res[0]), H, S, V))
 
-    arguments, values = getopt(sys.argv[1:], 'm', ['method'])
-    for i in range(len(arguments)):
-        if arguments[i][0] in ('-m', '--method'):
-            if values[i] == 'AVERAGE':
-                average_characterization(data)
-            elif values[i] == 'MULTIPLE_REGRESSION':
-                multiple_regression(data)
+    # If pre-cluster flag is activated, the centroids of UPC values are calculated
+    reg_methods = RegressionMethods()
+
+    if precluster:
+        data = reg_methods.pre_clustering(data)
+
+    # Build the object that contains all the regression methods
+
+    if method == 'MULTIPLE_REGRESSION':
+        model = reg_methods.multiple_lineal_regression(data)
+        print model
+        if graph:
+            data_plotting(data, None)
+    elif method == 'POLYNOMIAL_INTERPOL':
+        model = reg_methods.polynomial_interpolation(data)
+        print model
+        if graph:
+            data_plotting(data, None)
+    elif method == 'EUCLIDEAN_DISTANCE':
+        result = reg_methods.euclidean_distance(data, [89, 3])
+        print 'AGUA_LLAVE: ', result
+        result = reg_methods.euclidean_distance(data, [62, 18])
+        print 'EJE_AMBIENTAL: ', result
+        if graph:
+            data_plotting(data, None)

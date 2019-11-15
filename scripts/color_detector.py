@@ -1,11 +1,10 @@
+import colorsys
+import sys
 from collections import Counter
 
-import sys
 import cv2
-import imutils
-import colorsys
-import numpy as np
 from sklearn.cluster import KMeans
+
 
 class ColorDetector:
     def __init__(self, image_path):

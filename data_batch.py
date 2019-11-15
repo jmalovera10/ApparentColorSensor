@@ -16,7 +16,7 @@ if __name__ == '__main__':
     db_cursor = measurements_db.cursor(prepared=True)
     color_detector = ColorDetector('')
     # Current UPC available samples
-    upc = [1, 2, 3, 4, 5, 7, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 90, 100, 110, 150, 200, 250]
+    upc = [1, 2, 3, 4, 5, 7, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 90, 100, 110, 150, 200, 250, 300, 350, 400, 450, 500]
     for ref in upc:
         for sample in range(1, 5):
             # Iterate through the samples and store the results in the database
