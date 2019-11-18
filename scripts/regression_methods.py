@@ -29,7 +29,7 @@ class RegressionMethods:
 
     @staticmethod
     def multiple_lineal_regression(data):
-        x = [[H, S] for UPC, H, S, V in data]
+        x = [[H, S, V] for UPC, H, S, V in data]
         y = [[UPC] for UPC, H, S, V in data]
         model = LinearRegression()
         model.fit(x, y)
@@ -39,17 +39,18 @@ class RegressionMethods:
     def polynomial_interpolation(data):
         for count, degree in enumerate([1, 2, 3, 4, 5]):
             model = make_pipeline(PolynomialFeatures(degree), Ridge())
-            X = [[H, S] for UPC, H, S, V in data]
+            X = [[H, S, V] for UPC, H, S, V in data]
             y = [UPC for UPC, H, S, V in data]
             model.fit(X, y)
-            print model.predict([[62, 18]])
+            print model.predict([[62, 18, 48]])
 
     @staticmethod
     def euclidean_distance(centroids, data):
         least_distance = 1000000.0
         upc = 0
         for cent in centroids:
-            distance = math.sqrt(math.pow(cent[1] - data[0], 2) + math.pow(cent[2] - data[1], 2))
+            distance = math.sqrt(
+                math.pow(cent[1] - data[0], 2) + math.pow(cent[2] - data[1], 2) + math.pow(cent[3] - data[2], 2))
             if distance < least_distance:
                 least_distance = distance
                 upc = cent[0]

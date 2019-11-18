@@ -16,9 +16,9 @@ def data_plotting(data, regression_data):
     fig = plt.figure()
     ax = fig.gca(projection='3d')
     ax.scatter([H for UPC, H, S, V in data], [S for UPC, H, S, V in data], [UPC for UPC, H, S, V in data],
-               zdir='z', label='CARACTERIZACION PROTOTIPO 1', cmap='Blues')
-    ax.plot([H for UPC, H, S, V in data], [S for UPC, H, S, V in data], [UPC for UPC, H, S, V in data],
-            'red')
+               zdir='z', label='CARACTERIZACION PROTOTIPO VERTICAL', cmap='Blues')
+    #ax.plot([H for UPC, H, S, V in data], [S for UPC, H, S, V in data], [UPC for UPC, H, S, V in data],
+            #'red')
     ax.set_xlabel('HUE')
     ax.set_ylabel('SATURATION')
     ax.set_zlabel('UPC')
@@ -102,9 +102,9 @@ if __name__ == '__main__':
         if graph:
             data_plotting(data, None)
     elif method == 'EUCLIDEAN_DISTANCE':
-        result = reg_methods.euclidean_distance(data, [89, 3])
+        result = reg_methods.euclidean_distance(data, [89, 3, 59])
         print 'AGUA_LLAVE: ', result
-        result = reg_methods.euclidean_distance(data, [62, 18])
+        result = reg_methods.euclidean_distance(data, [62, 18, 48])
         print 'EJE_AMBIENTAL: ', result
         if graph:
             data_plotting(data, None)
