@@ -4,3 +4,4 @@ opencv-python
 pika
 imutils
 sklearn
+joblib

@@ -1,15 +1,18 @@
-from sklearn.cluster import KMeans
+import math
+import os
 from collections import Counter
+
+from sklearn.cluster import KMeans
 from sklearn.linear_model import LinearRegression
 from sklearn.linear_model import Ridge
-from sklearn.preprocessing import PolynomialFeatures
 from sklearn.pipeline import make_pipeline
-import math
+from sklearn.preprocessing import PolynomialFeatures
+from joblib import dump
 
 
 class RegressionMethods:
     def __init__(self):
-        return
+        pass
 
     @staticmethod
     def pre_clustering(data):
@@ -33,6 +36,7 @@ class RegressionMethods:
         y = [[UPC] for UPC, H, S, V in data]
         model = LinearRegression()
         model.fit(x, y)
+        dump(model, '%s\models\multiple_lineal_regression.joblib'% os.getcwd())
         return model.coef_[0], model.intercept_[0]
 
     @staticmethod
@@ -42,6 +46,7 @@ class RegressionMethods:
             X = [[H, S, V] for UPC, H, S, V in data]
             y = [UPC for UPC, H, S, V in data]
             model.fit(X, y)
+            dump(model, '%s\models\polynomial_regression_%d.joblib' % (os.getcwd(), degree))
             print model.predict([[62, 18, 48]])
 
     @staticmethod

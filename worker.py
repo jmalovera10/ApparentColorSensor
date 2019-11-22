@@ -4,8 +4,10 @@ import os
 import mysql.connector
 import pika
 import json
+from joblib import load
 
 load_dotenv('.env')
+model = load('./models/polynomial_regression_1.joblib')
 
 connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
 channel = connection.channel()
@@ -20,7 +22,8 @@ def callback(ch, method, properties, body):
 
 def process_image(meta_data):
     color_detector = ColorDetector(meta_data['imagePath'])
-    result = color_detector.process_image(False)
+    color = color_detector.process_image(False)
+    result = model.predict(color)
     print result
 
 
