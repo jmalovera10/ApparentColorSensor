@@ -27,10 +27,10 @@ def callback(ch, method, properties, body):
 def store_result(result, meta_data):
     # Connect to the database
     measurements_db = mysql.connector.connect(
-        user=os.getenv("USER"),
-        password=os.getenv("PASSWORD"),
-        host=os.getenv("HOST"),
-        database=os.getenv("DATABASE")
+        user=os.getenv("MYSQL_USER"),
+        password=os.getenv("MYSQL_PASSWORD"),
+        host=os.getenv("MYSQL_HOST"),
+        database=os.getenv("MYSQL_DATABASE")
     )
     db_cursor = measurements_db.cursor(prepared=True)
     # Calculate the timestamp from string date
@@ -53,8 +53,8 @@ def process_image(meta_data):
     except AttributeError as e:
         print 'Error processing image:'
         print e
-    except:
-        print 'Unknown error'
+    except Exception as e:
+        print e
 
 
 channel.basic_consume(queue=os.getenv("QUEUE_NAME"), on_message_callback=callback, auto_ack=True)
