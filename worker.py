@@ -21,6 +21,7 @@ def callback(ch, method, properties, body):
 
 
 def process_image(meta_data):
+    print meta_data['imagePath']
     color_detector = ColorDetector(meta_data['imagePath'])
     color = color_detector.process_image(False)
     result = model.predict([color])
