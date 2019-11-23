@@ -39,7 +39,7 @@ def store_result(result, meta_data):
         'INSERT INTO MEASUREMENTS(ID_USER, ID_SENSOR, VALUE_MEASURED, UNITS, MEASUREMENT_TIME, LATITUDE, LONGITUDE) '
         'VALUES (?,?,?,?,?,?,?)', [meta_data['ID_USER'], meta_data['ID_SENSOR'], result, 'UPC', timestamp,
                                    meta_data['LATITUDE'], meta_data['LONGITUDE']])
-
+    measurements_db.commit()
 
 def process_image(meta_data):
     try:
