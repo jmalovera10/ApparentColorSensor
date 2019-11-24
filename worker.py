@@ -51,7 +51,7 @@ def process_image(meta_data):
         color = map(int, color)
         result = model.predict([color])
         print 'RESULT: ', result[0], ' UPC'
-        store_result(result[0], meta_data)
+        store_result(result[0], meta_data['meta_data'])
 
     except AttributeError as e:
         print 'Error processing image:'
