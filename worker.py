@@ -34,11 +34,10 @@ def store_result(result, meta_data):
     )
     db_cursor = measurements_db.cursor(prepared=True)
     # Calculate the timestamp from string date
-    print meta_data['exif']
-    timestamp = time.mktime(datetime.datetime.strptime(meta_data['exif']['DateTime'], "%Y:%m:%d %H:%M:%S").timetuple())
+    meta_data = json.loads(meta_data)
     db_cursor.execute(
         'INSERT INTO MEASUREMENTS(ID_USER, ID_SENSOR, VALUE_MEASURED, UNITS, MEASUREMENT_TIME, LATITUDE, LONGITUDE) '
-        'VALUES (?,?,?,?,?,?,?)', [meta_data['ID_USER'], meta_data['ID_SENSOR'], result, 'UPC', timestamp,
+        'VALUES (?,?,?,?,?,?,?)', [meta_data['ID_USER'], meta_data['ID_SENSOR'], result, 'UPC', meta_data['TIMESTAMP'],
                                    meta_data['LATITUDE'], meta_data['LONGITUDE']])
     measurements_db.commit()
     print db_cursor.lastrowid
