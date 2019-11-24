@@ -56,6 +56,7 @@ def process_image(meta_data):
         print 'Error processing image:'
         print e
     except Exception as e:
+        print 'UNEXPECTED ERROR:'
         print e
 
 
