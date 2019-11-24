@@ -34,7 +34,7 @@ def store_result(result, meta_data):
     )
     db_cursor = measurements_db.cursor(prepared=True)
     # Calculate the timestamp from string date
-    timestamp = time.mktime(datetime.datetime.strptime(meta_data[''], "%Y:%m:%d %H:%M:%S").timetuple())
+    timestamp = time.mktime(datetime.datetime.strptime(meta_data['exif']['DateTime'], "%Y:%m:%d %H:%M:%S").timetuple())
     db_cursor.execute(
         'INSERT INTO MEASUREMENTS(ID_USER, ID_SENSOR, VALUE_MEASURED, UNITS, MEASUREMENT_TIME, LATITUDE, LONGITUDE) '
         'VALUES (?,?,?,?,?,?,?)', [meta_data['ID_USER'], meta_data['ID_SENSOR'], result, 'UPC', timestamp,
@@ -55,8 +55,8 @@ def process_image(meta_data):
     except AttributeError as e:
         print 'Error processing image:'
         print e
-    except Exception as e:
-        print 'UNEXPECTED ERROR:'
+    except KeyError as e:
+        print 'ATTRIBUTE NOT FOUND'
         print e
 
 
