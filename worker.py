@@ -21,6 +21,7 @@ channel.queue_declare(queue=os.getenv("QUEUE_NAME"), durable=True)
 def callback(ch, method, properties, body):
     print(" [x] Received %r" % body)
     image_meta_data = json.loads(body)
+    print image_meta_data
     process_image(image_meta_data)
 
 
