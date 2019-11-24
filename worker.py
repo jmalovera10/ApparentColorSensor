@@ -40,6 +40,8 @@ def store_result(result, meta_data):
         'VALUES (?,?,?,?,?,?,?)', [meta_data['ID_USER'], meta_data['ID_SENSOR'], result, 'UPC', timestamp,
                                    meta_data['LATITUDE'], meta_data['LONGITUDE']])
     measurements_db.commit()
+    print db_cursor.lastrowid
+
 
 def process_image(meta_data):
     try:
