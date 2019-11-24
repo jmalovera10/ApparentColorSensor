@@ -21,7 +21,6 @@ channel.queue_declare(queue=os.getenv("QUEUE_NAME"), durable=True)
 def callback(ch, method, properties, body):
     print(" [x] Received %r" % body)
     image_meta_data = json.loads(body)
-    print image_meta_data
     process_image(image_meta_data)
 
 
@@ -35,6 +34,7 @@ def store_result(result, meta_data):
     )
     db_cursor = measurements_db.cursor(prepared=True)
     # Calculate the timestamp from string date
+    print meta_data['exif']
     timestamp = time.mktime(datetime.datetime.strptime(meta_data['exif']['DateTime'], "%Y:%m:%d %H:%M:%S").timetuple())
     db_cursor.execute(
         'INSERT INTO MEASUREMENTS(ID_USER, ID_SENSOR, VALUE_MEASURED, UNITS, MEASUREMENT_TIME, LATITUDE, LONGITUDE) '
