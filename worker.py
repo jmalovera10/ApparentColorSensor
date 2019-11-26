@@ -11,7 +11,7 @@ from joblib import load
 from scripts.color_detector import ColorDetector
 
 load_dotenv('.env')
-model = load('./models/polynomial_regression_1.joblib')
+model = load('./models/polynomial_regression_2.joblib')
 
 connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
 channel = connection.channel()
