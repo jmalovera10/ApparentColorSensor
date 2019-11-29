@@ -36,7 +36,7 @@ class RegressionMethods:
         y = [[UPC] for UPC, H, S, V in data]
         model = LinearRegression()
         model.fit(x, y)
-        dump(model, '%s\models\multiple_lineal_regression.joblib'% os.getcwd())
+        dump(model, '%s\models\multiple_lineal_regression.joblib' % os.getcwd())
         return model.coef_[0], model.intercept_[0]
 
     @staticmethod
@@ -46,6 +46,8 @@ class RegressionMethods:
             X = [[H, S, V] for UPC, H, S, V in data]
             y = [UPC for UPC, H, S, V in data]
             model.fit(X, y)
+            print ('GRADE %d COEFFICIENTS: ' % degree), model.steps[1][1].coef_
+            print ('GRADE %d INTERCEPT: ' % degree), model.steps[1][1].intercept_
             dump(model, '%s\models\polynomial_regression_%d.joblib' % (os.getcwd(), degree))
             print model.predict([[62, 18, 48]])
 
