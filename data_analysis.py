@@ -3,28 +3,11 @@
 from dotenv import load_dotenv
 import os
 import mysql.connector
-from mpl_toolkits.mplot3d import Axes3D
-import matplotlib.pyplot as plt
 import sys
 from getopt import getopt
 import colorsys
 from scripts.regression_methods import RegressionMethods
-
-
-def data_plotting(data, regression_data):
-    print 'DATA_PLOTTING'
-    fig = plt.figure()
-    ax = fig.gca(projection='3d')
-    ax.scatter([H for UPC, H, S, V in data], [S for UPC, H, S, V in data], [UPC for UPC, H, S, V in data],
-               zdir='z', label='CARACTERIZACION PROTOTIPO VERTICAL', cmap='Blues')
-    #ax.plot([H for UPC, H, S, V in data], [S for UPC, H, S, V in data], [UPC for UPC, H, S, V in data],
-            #'red')
-    ax.set_xlabel('HUE')
-    ax.set_ylabel('SATURATION')
-    ax.set_zlabel('UPC')
-    ax.legend()
-
-    plt.show()
+from scripts import plotter
 
 
 if __name__ == '__main__':
@@ -95,16 +78,14 @@ if __name__ == '__main__':
         model = reg_methods.multiple_lineal_regression(data)
         print model
         if graph:
-            data_plotting(data, None)
+            plotter.normal_data_plotting(data, None)
     elif method == 'POLYNOMIAL_INTERPOL':
         model = reg_methods.polynomial_interpolation(data)
         print model
         if graph:
-            data_plotting(data, None)
+            plotter.normal_data_plotting(data)
     elif method == 'EUCLIDEAN_DISTANCE':
-        result = reg_methods.euclidean_distance(data, [89, 3, 59])
-        print 'AGUA_LLAVE: ', result
-        result = reg_methods.euclidean_distance(data, [62, 18, 48])
-        print 'EJE_AMBIENTAL: ', result
+        result = reg_methods.euclidean_distance(data, [80, 24, 52])
+        print 'VALOR_MUESTRA: ', result
         if graph:
-            data_plotting(data, None)
+            plotter.cylindrical_data_plotting(data)

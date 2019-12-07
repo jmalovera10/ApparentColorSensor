@@ -49,7 +49,7 @@ class RegressionMethods:
             print ('GRADE %d COEFFICIENTS: ' % degree), model.steps[1][1].coef_
             print ('GRADE %d INTERCEPT: ' % degree), model.steps[1][1].intercept_
             dump(model, '%s\models\polynomial_regression_%d.joblib' % (os.getcwd(), degree))
-            print model.predict([[62, 18, 48]])
+            print model.predict([[80, 24, 52]])
 
     @staticmethod
     def euclidean_distance(centroids, data):
